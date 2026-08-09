@@ -1,478 +1,484 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generator Bank Soal - Edumind</title>
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    /* Proteksi Light: Anti-Select & Anti-Drag (level halaman) */
-    body {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    .allow-select {
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
-    }
-    /* Elemen form WAJIB tetap bisa diketik & dipilih meski body anti-select */
-    input, textarea, select, button, .form-control {
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
-    }
-    /* Utilitas umum untuk konten tiap PG (Phase 2) */
-    .card {
-        background: #fff;
-        border-radius: 22px;
-        box-shadow: 0 10px 28px rgba(30,58,138,.12);
-    }
-    .output-box { white-space: pre-wrap; }
-</style>
-</head>
-<body class="bg-slate-900 min-h-screen flex flex-col m-0 p-0">
+/* Konfigurasi eksternal untuk Prompt Generator Bank Soal IPA-IPS-IPAS. */
+(function () {
+    const keterampilanSains = 'Murid menerapkan keterampilan proses: mengamati; mempertanyakan dan memprediksi; merencanakan dan melakukan penyelidikan; memproses dan menganalisis data; mengevaluasi dan merefleksi; serta mengomunikasikan hasil secara ilmiah.';
+    window.PG_BANK_SOAL_CONFIG = {
+        pilihanPerJenjang: {
+            'SD/MI': { mapel: ['IPAS'], kelas: ['Fase B Kelas 3', 'Fase B Kelas 4', 'Fase C Kelas 5', 'Fase C Kelas 6'] },
+            'SMP/MTs': { mapel: ['IPA', 'IPS'], kelas: ['Fase D Kelas 7', 'Fase D Kelas 8', 'Fase D Kelas 9'] },
+            'SMA/MA': { mapel: ['IPA', 'IPS', 'Biologi', 'Fisika', 'Kimia', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah', 'Sejarah Tingkat Lanjut', 'Antropologi'], kelas: ['Fase E Kelas 10', 'Fase F Kelas 11', 'Fase F Kelas 12'] },
+            'SMK': { mapel: ['IPA', 'IPS', 'Biologi', 'Fisika', 'Kimia', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah', 'Sejarah Tingkat Lanjut', 'Antropologi'], kelas: ['Fase E Kelas 10', 'Fase F Kelas 11', 'Fase F Kelas 12'] }
+        },
+        cpPerMapelFase: {
+            'IPAS|Fase B': 'Pada akhir Fase B, murid menjelaskan bentuk dan fungsi pancaindra; menganalisis siklus hidup makhluk hidup dan upaya pelestariannya; menghasilkan solusi pelestarian sumber daya alam sebagai mitigasi perubahan iklim; menyimpulkan perubahan wujud zat; menjelaskan sumber dan bentuk energi serta perubahan bentuk energi dalam kehidupan sehari-hari; membedakan jenis gaya dan pengaruhnya; menjelaskan peran, tugas, tanggung jawab, dan interaksi sosial di sekitar; mengenali letak kabupaten/kota dan provinsi dengan peta; mengklasifikasikan bentang alam dan keterkaitannya dengan profesi serta budaya; menganalisis sejarah masyarakat sekitar; serta menjelaskan nilai dan fungsi uang serta pengelolaan keuangan bijak. Murid menerapkan keterampilan proses: mengamati, mempertanyakan dan memprediksi, merencanakan dan melakukan penyelidikan dengan panduan pendidik, mengorganisasikan data sederhana, mengevaluasi dan merefleksi, serta mengomunikasikan hasil secara lisan dan tertulis.',
+            'IPAS|Fase C': 'Pada akhir Fase C, murid merefleksikan sistem organ tubuh manusia dan cara menjaga kesehatan; menganalisis hubungan komponen biotik dan abiotik serta pengaruhnya terhadap ekosistem; menjelaskan gelombang bunyi dan cahaya dalam kehidupan sehari-hari; menghasilkan upaya penghematan energi dan pemanfaatan energi alternatif sebagai mitigasi perubahan iklim; menjelaskan tata surya serta kaitannya dengan rotasi dan revolusi bumi; menjelaskan letak dan kondisi geografis Indonesia dengan peta; meninjau sejarah perjuangan pahlawan di sekitar; menemukan keragaman budaya nasional berdasarkan kearifan lokal; serta menerapkan kegiatan ekonomi masyarakat sekitar. Murid menerapkan keterampilan proses mengamati, mempertanyakan dan memprediksi, merencanakan dan melakukan penyelidikan, mengolah dan menganalisis data, mengevaluasi dan merefleksi, serta mengomunikasikan hasil secara utuh.',
+            'IPA|Fase D': 'Pada akhir Fase D, murid menelaah identifikasi makhluk hidup; menganalisis klasifikasi, sifat, dan perubahan materi; sistem organisasi kehidupan; interaksi makhluk hidup dan lingkungan dalam upaya perubahan iklim; pewarisan sifat; bioteknologi konvensional; pengukuran aspek fisis; gerak, gaya, tekanan, usaha dan energi; kalor; gelombang; kemagnetan dan kelistrikan; posisi bumi-bulan-matahari; serta keputusan untuk menghindari zat aditif dan adiktif berbahaya. Murid menerapkan keterampilan proses mengamati, mempertanyakan dan memprediksi, merencanakan dan melakukan penyelidikan, memproses dan menganalisis data, mengevaluasi dan merefleksi, serta mengomunikasikan hasil secara sistematis.',
+            'IPA|Fase E': 'Pada akhir Fase E, murid menerapkan prinsip klasifikasi dan strategi pelestarian keanekaragaman hayati; mendeskripsikan peranan virus, bakteri, dan jamur; menganalisis interaksi komponen ekosistem dan pengaruhnya terhadap keseimbangan ekosistem; menggunakan sistem pengukuran dalam kerja ilmiah; menganalisis gerak dua dimensi; menganalisis pemanfaatan energi alternatif; menganalisis partikel penyusun materi dan menerapkan konsep stoikiometri; serta menerapkan konsep IPA untuk mengatasi permasalahan perubahan iklim. Murid menerapkan keterampilan proses mengamati, mempertanyakan dan memprediksi, merencanakan dan melakukan penyelidikan, memproses dan menganalisis data, mengevaluasi dan merefleksi, serta mengomunikasikan hasil secara sistematis.',
+            'IPS|Fase D': 'Pada akhir Fase D, murid menjelaskan keberagaman kondisi geografis Indonesia dan konektivitas antarruang; memprediksi dampak perubahan iklim serta merefleksikan adaptasi dan mitigasi bencana; mengidentifikasi kegiatan ekonomi, harga, pasar, lembaga keuangan, dan perdagangan internasional; menelaah peran masyarakat dan negara dalam pertumbuhan ekonomi digital; mengelaborasi interaksi sosial, lembaga sosial, dinamika sosial, dan perubahan sosial budaya; menjelaskan konsep dasar sejarah; serta menganalisis keterhubungan masa lampau, kini, dan masa depan dalam sejarah lokal, nasional, dan global. Murid menerapkan keterampilan proses mengamati, menanya, mengumpulkan dan mengolah informasi, menguji dan menerapkan konsep, mengevaluasi, merefleksi, serta mengomunikasikan hasil penyelidikan.',
+            'IPS|Fase E': 'Pada akhir Fase E, murid menjelaskan konsep dasar geografi serta fenomena geografi fisik melalui litosfer, atmosfer, dan hidrosfer sebagai ruang hidup; mengimplementasikan teknologi geospasial berupa peta, penginderaan jauh, dan SIG; menelaah hakikat ilmu ekonomi dan membedakan produk keuangan bank dan nonbank; menjelaskan fungsi sosiologi dan menelaah status serta peran individu dalam kelompok sosial; menganalisis keragaman manusia dan budaya dalam masyarakat multikultural; serta menelaah konsep dasar sejarah dan mengimplementasikan penelitian sejarah dari masa kerajaan Hindu-Buddha hingga kerajaan Islam. Murid menerapkan keterampilan proses mengamati, membuat pertanyaan, mengumpulkan dan menyimpulkan informasi, mengomunikasikan hasil analisis, merefleksi, dan menyusun tindak lanjut.',
+            'Biologi|Fase F': 'Pada akhir Fase F, murid mengaitkan hubungan struktur dan fungsi organel sel; menerapkan prinsip bioproses dalam sel; menganalisis keterkaitan antarsistem organ dalam merespons stimulus; menerapkan prinsip pewarisan sifat, pertumbuhan dan perkembangan; mengaitkan mekanisme evolusi dengan keanekaragaman dan kelangsungan hidup organisme; serta menganalisis proses bioteknologi modern. ' + keterampilanSains,
+            'Fisika|Fase F': 'Pada akhir Fase F, murid menganalisis hubungan gerak dan gaya serta pemanfaatannya; membuat karya penerapan hukum fluida; menganalisis kalor dan termodinamika untuk mengidentifikasi perubahan iklim; menganalisis gelombang dan penerapannya; mengevaluasi rangkaian listrik; menganalisis fenomena elektromagnetik; menganalisis teori dasar fisika modern dan pengaruhnya terhadap teknologi; serta menerapkan teori dasar digital dalam kehidupan sehari-hari. ' + keterampilanSains,
+            'Kimia|Fase F': 'Pada akhir Fase F, murid menganalisis hubungan struktur atom dengan sistem periodik; membandingkan ikatan kimia dan kaitannya dengan bentuk molekul serta gaya antarmolekul; mengaitkan perubahan entalpi standar dengan sumber energi di lingkungan; menganalisis faktor laju reaksi dan kesetimbangan kimia; menjelaskan daya hantar listrik serta sifat koligatif larutan; menjelaskan sel elektrokimia dalam kehidupan sehari-hari; serta menjelaskan senyawa karbon dan makromolekul. ' + keterampilanSains,
+            'Ekonomi|Fase F': 'Pada akhir Fase F, murid menjelaskan konsep dasar ekonomi; mengidentifikasi dan menganalisis masalah ekonomi serta keuangan, termasuk literasi ekonomi dan keuangan digital; memahami pendapatan nasional, pertumbuhan ekonomi, kemiskinan, kesenjangan, dan solusinya; ketenagakerjaan; uang, peredaran uang, inflasi, dan kebijakan moneter; akuntansi keuangan dasar; kebijakan fiskal, anggaran negara/daerah, perpajakan; serta ekonomi internasional. Murid mengamati, mempertanyakan, mengumpulkan dan menganalisis informasi ekonomi, menarik kesimpulan dan solusi, mengomunikasikan serta merefleksikan hasilnya, dan merencanakan projek kolaboratif.',
+            'Geografi|Fase F': 'Pada akhir Fase F, murid menganalisis keuntungan posisi strategis Indonesia secara astronomis, geografis, dan geologis serta pemanfaatan sumber daya alam; memahami pola keanekaragaman hayati Indonesia dan dunia; karakteristik geografi penduduk Indonesia; perubahan iklim, kebencanaan, dan lingkungan hidup; serta kewilayahan, pembangunan, dan kerja sama antarnegara. Murid mengamati fenomena, mengajukan pertanyaan ilmiah, mengumpulkan serta mendokumentasikan data, menganalisis dan menyimpulkan, mengomunikasikan hasil melalui peta/grafik/tabel/infografis/media digital, merefleksi, dan membuat projek kolaboratif.',
+            'Sosiologi|Fase F': 'Pada akhir Fase F, murid berpikir kritis dan kreatif, melakukan kajian literasi atas fenomena sosiologi, menganalisis, menyajikan, melaporkan, dan mengomunikasikan hasil kajian; menunjukkan kesadaran sebagai warga yang baik; serta menghasilkan projek inovatif digital atau nondigital. Murid menganalisis masalah sosial, konflik dan integrasi sosial, pemecahan masalah melalui pemberdayaan, kesetaraan dalam perbedaan sosial untuk masyarakat multikultural, serta hubungan perubahan sosial dalam kelompok/komunitas dan globalisasi; lalu merancang projek kolaboratif yang solutif untuk masyarakat harmonis.',
+            'Sejarah|Fase F': 'Pada akhir Fase F, murid menjelaskan sejarah Masa Penjajahan Bangsa Barat, perlawanan rakyat daerah, Pergerakan Kebangsaan Indonesia, Pendudukan Jepang, Proklamasi dan mempertahankan kemerdekaan, masa pemerintahan Sukarno, Suharto, serta Reformasi. Murid menerapkan berpikir sejarah, literasi dan penelitian sejarah melalui inkuiri, serta mengevaluasi nilai sejarah bagi kehidupan masa kini; menggunakan keterampilan diakronis dan sinkronis, analisis/interpretasi, riset, literasi, analisis isu, dan pengambilan keputusan.',
+            'Sejarah Tingkat Lanjut|Fase F': 'Pada akhir Fase F, murid menunjukkan kesadaran sejarah melalui berpikir sejarah, literasi, penelitian dan penulisan sejarah; mengaplikasikan sejarah dunia berwawasan global yang dikaitkan dengan sejarah Indonesia dalam projek digital atau nondigital; serta merefleksikan sejarah dunia dalam kehidupan sehari-hari. Murid mempelajari asal-usul manusia, peradaban dan pemikiran besar dunia, revolusi besar, Perang Dunia I dan II, Perang Dingin, serta peristiwa kontemporer abad ke-21 dengan proses berpikir historis dan keterampilan riset sejarah.',
+            'Antropologi|Fase F': 'Pada akhir Fase F, murid menjelaskan konsep dasar Antropologi, sejarah perkembangan, ruang lingkup, pendekatan emik, relativisme budaya, thick description, dan holistik dalam menganalisis fenomena budaya; menjelaskan metode penelitian etnografi; memahami kebudayaan, bahasa, religi, organisasi sosial, keluarga, kekerabatan, dan problematika keberagaman budaya dalam masyarakat multikultural serta digital. Murid menerapkan etnografi sederhana, relativisme budaya, dan pendekatan emik-etik; menganalisis serta mengevaluasi temuan; dan memberi rekomendasi untuk pemahaman lintas budaya serta penghargaan terhadap keberagaman.'
+        }
+    };
+})();
 
-    <!-- ============================================================
-         LOGIN SCREEN — JANGAN DIUBAH (harus identik di semua PG)
-         Bagian dinamis hanya: Bank Soal dan Asisten Kerja Digital Sekolah V1
-    ============================================================= -->
-    <div id="login-screen" data-login-username="edumind" data-login-password="akds-080826" class="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8 bg-slate-900">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+// ================= IDENTITAS PG & SESSION =================
+        // Kode unik per PG, dipakai supaya sesi login 1 PG tidak "bocor" ke PG lain
+        const PG_CODE = "p1sp2pg2";
+        const SESSION_KEY = "akds_session_" + PG_CODE;
 
-            <div class="text-center mb-6">
-                <img src="https://growva.biz.id/gambarbebas/20260621-082723_Logo%20Edumind%20Academy%20-%20Terbaru2026%20[putih].png"
-                     alt="Logo Edumind"
-                     class="h-16 object-contain mx-auto mb-4 img-responsive">
+        // Kredensial default (samakan di semua PG, ganti ke sistem auth sesungguhnya kalau sudah siap)
+        const VALID_USERNAME = document.getElementById('login-screen').dataset.loginUsername;
+        const VALID_PASSWORD = document.getElementById('login-screen').dataset.loginPassword;
 
-                <h2 class="text-xs font-semibold text-blue-700 Sentence Case tracking-wider mt-1">
-                    Prompt Generator
-                </h2>
+        function handleLogin(event) {
+            if (event) event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorBox = document.getElementById('login-error');
 
-                <h2 class="text-2xl font-black tracking-tight text-slate-900">
-                    Bank Soal
-                </h2>
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                errorBox.classList.add('hidden');
+                sessionStorage.setItem(SESSION_KEY, 'active');
+                showApp();
+            } else {
+                errorBox.classList.remove('hidden');
+            }
+            return false;
+        }
 
-                <p class="text-xs font-semibold text-blue-700 Sentence Case tracking-wider mt-1">
-                    Asisten Kerja Digital Sekolah V1
-                </p>
-            </div>
+        function handleLogout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            showLogin();
+        }
 
-            <form id="login-form" action="#" method="post" onsubmit="return handleLogin(event)" class="space-y-4">
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            const app = document.getElementById('app-screen');
+            app.classList.remove('hidden');
+            app.classList.add('flex');
+        }
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">UserID / Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-user text-sm"></i>
-                        </span>
-                        <input type="text" id="username" placeholder="Masukkan UserID Anda" required
-                               class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-800 focus:bg-white transition-all form-control">
-                    </div>
-                </div>
+        function showLogin() {
+            const app = document.getElementById('app-screen');
+            app.classList.add('hidden');
+            app.classList.remove('flex');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-lock text-sm"></i>
-                        </span>
-                        <input type="password" id="password" placeholder="••••••••" required
-                               class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-800 focus:bg-white transition-all form-control">
-                    </div>
-                </div>
+        window.addEventListener('load', function () {
+            if (sessionStorage.getItem(SESSION_KEY) === 'active') {
+                showApp();
+            } else {
+                showLogin();
+            }
+            updateJenjangDanPilihan();
+        });
 
-                <div id="login-error" class="hidden text-xs font-semibold text-red-600 bg-red-50 p-3 rounded-xl border border-red-200 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-exclamation"></i> UserID atau Password salah. Akses ditolak!
-                </div>
+        // ================= PROTEKSI SOURCE CODE =================
+        // Semua listener di bawah ini MENGABAIKAN elemen INPUT/TEXTAREA
+        // supaya form generator tetap normal dipakai (ketik, pilih, copy-paste isian).
 
-                <button type="submit"
-                        class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
-                </button>
+        // 1. Anti klik kanan
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
 
-            </form>
+        // 2. & 3. & 4. Anti Ctrl+U, Anti Ctrl+S, Anti F12
+        document.addEventListener('keydown', function (e) {
+            const tag = (e.target.tagName || '').toUpperCase();
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
-            <div class="mt-6 pt-4 border-t border-gray-100 text-center space-y-1.5">
-                <p class="text-[11px] text-gray-400 leading-relaxed">
-                    © 2026 Edumind Academy. Seluruh hak kekayaan intelektual dilindungi undang-undang.
-                </p>
-                <p class="text-[11px] text-gray-400 leading-relaxed">
-                    Gunakan aplikasi ini secara sah dan amanah agar keberkahannya senantiasa mengalir.
-                </p>
-                <p class="text-[11px] text-gray-500 font-medium flex items-center justify-center gap-1">
-                    <i class="fa-brands fa-whatsapp text-green-600"></i> 0813-8584-1500 — satu-satunya nomor WhatsApp resmi Edumind Academy
-                </p>
-            </div>
-        </div>
-    </div>
+            const k = e.key.toLowerCase();
+            const isDevToolsKey = e.key === 'F12' ||
+                (e.ctrlKey && (k === 'u' || k === 's')) ||
+                (e.ctrlKey && e.shiftKey && (k === 'i' || k === 'j' || k === 'c'));
 
-    <!-- ============================================================
-         APP SCREEN — Header + tombol logout SAMA di semua PG.
-         Konten unik tiap PG hanya diisi di dalam <div id="app-content">
-    ============================================================= -->
-    <div id="app-screen" class="hidden min-h-screen flex-col bg-slate-100">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-sm">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-blue-900 rounded-xl flex items-center justify-center text-white text-lg">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold text-slate-800 leading-tight">Bank Soal</h1>
-                    <p class="text-xs text-slate-500">Asisten Kerja Digital Sekolah V1</p>
-                </div>
-            </div>
-            <button onclick="handleLogout()"
-                    class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition flex items-center gap-1">
-                <i class="fa-solid fa-right-from-bracket"></i> Keluar
-            </button>
-        </header>
+            if (isDevToolsKey) {
+                e.preventDefault();
+            }
+        });
 
-        <div id="app-content" class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-7 space-y-6">
+        // 5. Anti Copy Text (kecuali sedang di dalam form)
+        document.addEventListener('copy', function (e) {
+            const tag = (e.target.tagName || '').toUpperCase();
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+            e.preventDefault();
+        });
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-school mr-2"></i>1. IDENTITAS SATUAN PENDIDIKAN</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Sekolah *</label>
-                            <input class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="nama_sekolah" type="text" required placeholder="Contoh: SMP Islam Edumind Bekasi">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Jenjang Pendidikan</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="jenjang_pendidikan" onchange="updateJenjangDanPilihan()">
-                                <option value="SD/MI" selected>SD/MI</option>
-                                <option value="SMP/MTs">SMP/MTs</option>
-                                <option value="SMA/MA">SMA/MA</option>
-                                <option value="SMK">SMK</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fase/Kelas</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="fase_kelas" onchange="updateCapaianPembelajaran()">
-                                <option value="Fase B Kelas 3">Fase B Kelas 3</option>
-                                <option value="Fase B Kelas 4" selected>Fase B Kelas 4</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Pelajaran *</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 font-semibold" id="mata_pelajaran" onchange="updateCapaianPembelajaran()" required>
-                                <option value="IPA">IPA</option>
-                                <option value="IPS">IPS</option>
-                                <option value="IPAS" selected>IPAS</option>
-                                <option value="Biologi">Biologi</option>
-                                <option value="Fisika">Fisika</option>
-                                <option value="Kimia">Kimia</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+        // 6. Anti Select Text — sudah dihandle lewat CSS user-select:none di atas
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-book-open mr-2"></i>2. BAB & KOMPETENSI</h3>
-                    <p class="text-xs text-slate-500">Sesuai Permendikdasmen No. 13 Tahun 2025 — setiap Bab memiliki file materi ajar rujukan tersendiri.</p>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">BAB Ke- *</label>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="ubahBab(-1)" title="Kurangi nomor BAB"
-                                    class="w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-blue-100 text-blue-900 border border-slate-200 rounded-lg transition">
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </button>
-                            <input class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-center font-semibold focus:ring-2 focus:ring-blue-600 allow-select" id="bab_ke" type="text" value="BAB 1" required placeholder="Contoh: BAB 1, BAB 2, dan seterusnya">
-                            <button type="button" onclick="ubahBab(1)" title="Tambah nomor BAB"
-                                    class="w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-blue-100 text-blue-900 border border-slate-200 rounded-lg transition">
-                                <i class="fa-solid fa-chevron-up"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Bab *</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="judul_bab" rows="2" required placeholder="Contoh: Mengubah Bentuk Energi">Mengubah Bentuk Energi</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Topik/Unit Pembelajaran *</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="topik_unit" rows="2" required placeholder="Contoh: Perubahan energi di sekitar kita dan fotosintesis">Perubahan energi di sekitar kita dan fotosintesis sebagai proses penting di Bumi</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Capaian Pembelajaran (CP) Terkait *</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 allow-select" id="capaian_pembelajaran" rows="6" required readonly aria-live="polite" placeholder="CP akan terisi otomatis berdasarkan Mata Pelajaran dan Fase/Kelas."></textarea>
-                        <p class="text-[11px] text-slate-500 mt-1">Diisi otomatis dari CP yang dilampirkan. Ubah Mata Pelajaran atau Fase/Kelas untuk memperbarui CP.</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tujuan Pembelajaran (TP) yang Diukur *</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="tujuan_pembelajaran" rows="2" oninput="updateIndikatorSoal()" required placeholder="Contoh: Mengidentifikasi perubahan bentuk energi pada benda di sekitar dan menjelaskan peran fotosintesis.">Mengidentifikasi perubahan bentuk energi pada benda di sekitar serta menjelaskan peran fotosintesis dalam kehidupan.</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Indikator Soal (Otomatis)</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 allow-select" id="indikator_soal" rows="2" readonly></textarea>
-                        <p class="text-[11px] text-slate-500 mt-1">Diperbarui otomatis berdasarkan CP dan TP yang dipilih/ditulis.</p>
-                    </div>
-                </div>
+        // 7. Anti Drag Elemen (kecuali form)
+        document.addEventListener('dragstart', function (e) {
+            const tag = (e.target.tagName || '').toUpperCase();
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+            e.preventDefault();
+        });
 
-                <div class="card p-6 space-y-4 border-2 border-red-300 bg-red-50/40">
-                    <h3 class="text-md font-bold text-red-800 border-b border-red-200 pb-2"><i class="fa-solid fa-paperclip mr-2"></i>3. REFERENSIAL FILE BAB (VALIDITAS MUTLAK)</h3>
-                    <p class="text-xs text-red-900 leading-relaxed">
-                        Sistem ini WAJIB merujuk secara EKSKLUSIF pada PDF materi ajar yang Anda lampirkan untuk Bab ini saat menempelkan prompt ke AI (ChatGPT/Gemini/Claude). Ini menjamin seluruh butir soal tetap berada dalam lingkup CP resmi dan menghindari halusinasi informasi di luar buku teks rujukan.
-                        <b>Prompt yang dihasilkan akan otomatis menginstruksikan AI</b>: jika ada file BAB terlampir → wajib jadikan SATU-SATUNYA acuan dan dilarang menyimpang; jika tidak ada file → AI tetap menyusun soal mandiri berdasarkan field CP/TP di atas. Anda tidak perlu mencentang apa pun — cukup lampirkan file BAB-nya nanti di chat AI.
-                    </p>
-                    <div>
-                        <label class="block text-xs font-semibold text-red-900 mb-1">Nama File Materi/PDF (Opsional)</label>
-                        <input class="w-full px-3 py-2 border border-red-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 allow-select bg-white" id="nama_file_referensi" type="text" value="IPAS_Kelas4_Bab1.pdf" placeholder="Contoh: IPAS_Kelas4_Bab1.pdf">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-red-900 mb-1">Fokus Bagian File BAB (Opsional)</label>
-                        <textarea class="w-full px-3 py-2 border border-red-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 allow-select bg-white" id="fokus_file_referensi" rows="2" placeholder="Contoh: Bab 1, halaman 3-23. Kosongkan jika tidak relevan.">Bab 1, halaman 3-23</textarea>
-                    </div>
-                </div>
+        // 8. Deteksi DevTools (peringatan di console, tidak mengunci halaman
+        //    supaya tidak berisiko salah deteksi / mengganggu pengguna sah)
+        (function () {
+            const threshold = 160;
+            let warned = false;
+            setInterval(function () {
+                const widthDiff = window.outerWidth - window.innerWidth;
+                const heightDiff = window.outerHeight - window.innerHeight;
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    if (!warned) {
+                        console.log('%cAkses source code dibatasi.', 'color:red;font-size:16px;font-weight:bold;');
+                        warned = true;
+                    }
+                } else {
+                    warned = false;
+                }
+            }, 1000);
+        })();
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-hands-holding-child mr-2"></i>4. DIMENSI PROFIL LULUSAN</h3>
-                    <p class="text-xs text-slate-500">Pilih dimensi karakter yang diintegrasikan secara proporsional ke dalam soal.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
-                        <label class="flex items-center space-x-2"><input checked name="dimensi_profil_lulusan" type="checkbox" value="Keimanan"> <span>Keimanan</span></label>
-                        <label class="flex items-center space-x-2"><input checked name="dimensi_profil_lulusan" type="checkbox" value="Kewargaan"> <span>Kewargaan</span></label>
-                        <label class="flex items-center space-x-2"><input checked name="dimensi_profil_lulusan" type="checkbox" value="Nalar Kritis"> <span>Nalar Kritis</span></label>
-                        <label class="flex items-center space-x-2"><input name="dimensi_profil_lulusan" type="checkbox" value="Kreativitas"> <span>Kreativitas</span></label>
-                        <label class="flex items-center space-x-2"><input name="dimensi_profil_lulusan" type="checkbox" value="Kolaborasi"> <span>Kolaborasi</span></label>
-                        <label class="flex items-center space-x-2"><input name="dimensi_profil_lulusan" type="checkbox" value="Kemandirian"> <span>Kemandirian</span></label>
-                        <label class="flex items-center space-x-2"><input name="dimensi_profil_lulusan" type="checkbox" value="Kesehatan"> <span>Kesehatan</span></label>
-                        <label class="flex items-center space-x-2"><input name="dimensi_profil_lulusan" type="checkbox" value="Komunikasi"> <span>Komunikasi</span></label>
-                    </div>
-                </div>
+        // ================= FUNGSI KHUSUS PG: GENERATOR BANK SOAL =================
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-list-check mr-2"></i>5. BENTUK SOAL & KUANTITAS</h3>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Bentuk Soal (7 Bentuk Modern)</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
-                            <label class="flex items-center space-x-2"><input checked name="bentuk_soal" type="checkbox" value="Pilihan Ganda"> <span>Pilihan Ganda</span></label>
-                            <label class="flex items-center space-x-2"><input name="bentuk_soal" type="checkbox" value="Pilihan Ganda Kompleks"> <span>Pilihan Ganda Kompleks</span></label>
-                            <label class="flex items-center space-x-2"><input name="bentuk_soal" type="checkbox" value="Benar-Salah"> <span>Benar-Salah</span></label>
-                            <label class="flex items-center space-x-2"><input name="bentuk_soal" type="checkbox" value="Menjodohkan"> <span>Menjodohkan</span></label>
-                            <label class="flex items-center space-x-2"><input checked name="bentuk_soal" type="checkbox" value="Isian Singkat"> <span>Isian Singkat</span></label>
-                            <label class="flex items-center space-x-2"><input checked name="bentuk_soal" type="checkbox" value="Uraian"> <span>Uraian</span></label>
-                            <label class="flex items-center space-x-2"><input name="bentuk_soal" type="checkbox" value="Studi Kasus"> <span>Studi Kasus</span></label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kuantitas (n) — Jumlah Soal Total</label>
-                        <input class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="jumlah_soal" type="number" value="25" min="1">
-                        <p class="text-[11px] text-slate-500 mt-1">Jumlah total harus sama dengan akumulasi jumlah soal per bentuk di bawah.</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Jumlah Soal per Bentuk</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700">
-                            <label class="flex items-center justify-between gap-3">Pilihan Ganda <input data-jumlah-bentuk="Pilihan Ganda" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="15"></label>
-                            <label class="flex items-center justify-between gap-3">Pilihan Ganda Kompleks <input data-jumlah-bentuk="Pilihan Ganda Kompleks" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="0"></label>
-                            <label class="flex items-center justify-between gap-3">Benar-Salah <input data-jumlah-bentuk="Benar-Salah" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="0"></label>
-                            <label class="flex items-center justify-between gap-3">Menjodohkan <input data-jumlah-bentuk="Menjodohkan" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="0"></label>
-                            <label class="flex items-center justify-between gap-3">Isian Singkat <input data-jumlah-bentuk="Isian Singkat" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="5"></label>
-                            <label class="flex items-center justify-between gap-3">Uraian <input data-jumlah-bentuk="Uraian" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="5"></label>
-                            <label class="flex items-center justify-between gap-3">Studi Kasus <input data-jumlah-bentuk="Studi Kasus" class="w-20 px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" value="0"></label>
-                        </div>
-                    </div>
-                </div>
+        // CP otomatis diringkas dari dokumen CP yang dilampirkan pengguna.
+        // Kelas yang ditampilkan dibatasi pada fase yang tersedia dalam dokumen acuan.
+        const PILIHAN_PER_JENJANG = window.PG_BANK_SOAL_CONFIG?.pilihanPerJenjang || {};
+        const CP_PER_MAPEL_FASE = window.PG_BANK_SOAL_CONFIG?.cpPerMapelFase || {};
 
-                <div class="card p-6 space-y-4 border-2 border-amber-300 bg-amber-50/40">
-                    <h3 class="text-md font-bold text-amber-800 border-b border-amber-200 pb-2"><i class="fa-solid fa-layer-group mr-2"></i>6. PRESISI LEVEL KOGNITIF</h3>
-                    <div class="grid grid-cols-1 gap-2 text-sm text-slate-700">
-                        <label class="flex items-start space-x-2"><input checked name="level_kognitif" type="checkbox" value="L1 (Knowing)" class="mt-1"> <span><b>L1 (Knowing)</b> — kemampuan standar minimum mengingat dan memahami materi</span></label>
-                        <label class="flex items-start space-x-2"><input checked name="level_kognitif" type="checkbox" value="L2 (Applying)" class="mt-1"> <span><b>L2 (Applying)</b> — kemampuan aplikasi konsep dalam situasi berbeda/konteks nyata</span></label>
-                        <label class="flex items-start space-x-2"><input checked name="level_kognitif" type="checkbox" value="L3 (Reasoning)" class="mt-1"> <span><b>L3 (Reasoning)</b> — kemampuan penalaran kritis: analisis, evaluasi, kreasi</span></label>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Proporsi Level (Opsional)</label>
-                        <input class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="proporsi_level" type="text" placeholder="Contoh: L1 30%, L2 40%, L3 30%. Kosongkan untuk proporsi seimbang otomatis.">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Tingkat Kesulitan (total harus 100%)</label>
-                        <div class="grid grid-cols-3 gap-2 text-xs text-slate-700">
-                            <label>Mudah <input id="kesulitan_mudah" class="mt-1 w-full px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" max="100" value="40">%</label>
-                            <label>Sedang <input id="kesulitan_sedang" class="mt-1 w-full px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" max="100" value="40">%</label>
-                            <label>Sulit <input id="kesulitan_sulit" class="mt-1 w-full px-2 py-1 border border-slate-200 rounded-md allow-select" type="number" min="0" max="100" value="20">%</label>
-                        </div>
-                    </div>
-                </div>
+        function getFase(value) {
+            return (value || '').split(' Kelas ')[0];
+        }
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-compass mr-2"></i>7. KONTEKS & VARIASI STIMULUS EDUKATIF</h3>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Konteks Soal</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
-                            <label class="flex items-center space-x-2"><input checked name="konteks_soal" type="checkbox" value="Kehidupan Sehari-hari"> <span>Kehidupan Sehari-hari</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Lingkungan Sekolah"> <span>Lingkungan Sekolah</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Keluarga"> <span>Keluarga</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Masyarakat"> <span>Masyarakat</span></label>
-                        <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Keislaman/Adab"> <span>Keislaman/Adab</span></label>
-                        <label class="flex items-center space-x-2"><input checked name="konteks_soal" type="checkbox" value="Sains dan Teknologi"> <span>Sains dan Teknologi</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Kearifan Lokal"> <span>Kearifan Lokal</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Literasi"> <span>Literasi</span></label>
-                            <label class="flex items-center space-x-2"><input name="konteks_soal" type="checkbox" value="Numerasi"> <span>Numerasi</span></label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Gunakan Stimulus Soal?</label>
-                        <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="stimulus_soal" onchange="toggleJenisStimulus()">
-                            <option value="Ya" selected>Ya</option>
-                            <option value="Tidak">Tidak</option>
-                        </select>
-                    </div>
-                    <div id="wrapper_jenis_stimulus">
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Jenis Stimulus (Wajib Bervariasi Tiap Batch)</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
-                            <label class="flex items-center space-x-2"><input checked name="jenis_stimulus" type="checkbox" value="Teks Bacaan"> <span>Teks Bacaan</span></label>
-                            <label class="flex items-center space-x-2"><input name="jenis_stimulus" type="checkbox" value="Data/Tabel"> <span>Data/Tabel</span></label>
-                            <label class="flex items-center space-x-2"><input checked name="jenis_stimulus" type="checkbox" value="Gambar/Ilustrasi"> <span>Gambar/Ilustrasi</span></label>
-                            <label class="flex items-center space-x-2"><input name="jenis_stimulus" type="checkbox" value="Grafik/Diagram"> <span>Grafik/Diagram</span></label>
-                            <label class="flex items-center space-x-2"><input name="jenis_stimulus" type="checkbox" value="Kasus"> <span>Kasus</span></label>
-                            <label class="flex items-center space-x-2"><input name="jenis_stimulus" type="checkbox" value="Dialog"> <span>Dialog</span></label>
-                            <label class="flex items-center space-x-2"><input name="jenis_stimulus" type="checkbox" value="Fenomena"> <span>Fenomena</span></label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Bahasa dan Gaya Soal</label>
-                        <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="gaya_bahasa_soal">
-                            <option value="Bahasa sederhana, komunikatif, dan sesuai perkembangan peserta didik">Sederhana sesuai usia peserta didik</option>
-                            <option value="Bahasa Indonesia baku, formal, dan akademik" selected>Formal dan baku</option>
-                            <option value="Bahasa kontekstual berbasis kehidupan sehari-hari">Kontekstual kehidupan sehari-hari</option>
-                        </select>
-                    </div>
-                </div>
+        function updateCapaianPembelajaran() {
+            const mapel = document.getElementById('mata_pelajaran').value;
+            const faseKelas = document.getElementById('fase_kelas').value;
+            const cp = CP_PER_MAPEL_FASE[`${mapel}|${getFase(faseKelas)}`];
+            document.getElementById('capaian_pembelajaran').value = cp || 'CP belum tersedia untuk kombinasi Mata Pelajaran dan Fase/Kelas ini.';
+            updateIndikatorSoal();
+        }
 
-                <div class="card p-6 space-y-3 border-2 border-emerald-300 bg-emerald-50/40">
-                    <h3 class="text-md font-bold text-emerald-800 border-b border-emerald-200 pb-2"><i class="fa-solid fa-shield-halved mr-2"></i>ATURAN NON-REPETISI & INDEPENDENSI BUTIR SOAL (TERKUNCI OTOMATIS)</h3>
-                    <p class="text-xs text-emerald-900 leading-relaxed">
-                        Jika satu stimulus dipakai untuk lebih dari satu soal, AI dilarang keras membuat butir soal yang jawabannya sudah tertera pada soal sebelumnya dalam stimulus yang sama. Setiap soal harus berdiri sendiri secara logika.
-                    </p>
-                </div>
+        function updateMapelDanKelas() {
+            const jenjang = document.getElementById('jenjang_pendidikan').value;
+            const selectKelas = document.getElementById('fase_kelas');
+            const pilihan = PILIHAN_PER_JENJANG[jenjang] || { kelas: [] };
+            const kelasTersedia = pilihan.kelas;
+            const kelasSebelumnya = selectKelas.value;
+            selectKelas.innerHTML = kelasTersedia.map(kelas => `<option value="${kelas}">${kelas}</option>`).join('');
+            if (kelasTersedia.includes(kelasSebelumnya)) selectKelas.value = kelasSebelumnya;
+            else if (jenjang === 'SD/MI') selectKelas.value = 'Fase B Kelas 4';
+            updateCapaianPembelajaran();
+        }
 
-                <div class="card p-6 space-y-3">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-note-sticky mr-2"></i>8. CATATAN PERUNTUKAN (BUKAN FILTER)</h3>
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                        Sejak pendekatan Bank Soal berbasis BAB ini diberlakukan, jenis penilaian (Asesmen Diagnostik, Formatif, Sumatif, Ujian Sekolah, dst) TIDAK LAGI menjadi filter/pilihan yang membatasi soal yang dihasilkan. Guru diberi otonomi penuh untuk memakai output bank soal ini sesuai kebutuhan asesmen apa pun. Kolom di bawah ini murni catatan pengingat pribadi, opsional, dan tidak memengaruhi instruksi ke AI.
-                    </p>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Rencana Peruntukan (Opsional, Catatan Pribadi)</label>
-                        <input class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="catatan_peruntukan" type="text" placeholder="Contoh: rencana dipakai sebagian untuk Asesmen Diagnostik, sebagian untuk Ujian Sekolah">
-                    </div>
-                </div>
+        function updateJenjangDanPilihan() {
+            const jenjang = document.getElementById('jenjang_pendidikan').value;
+            const pilihan = PILIHAN_PER_JENJANG[jenjang] || { mapel: [] };
+            const selectMapel = document.getElementById('mata_pelajaran');
+            const mapelSebelumnya = selectMapel.value;
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-table-list mr-2"></i>9. FORMAT & KOMPONEN BANK SOAL</h3>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Format Bank Soal</label>
-                        <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="format_bank_soal">
-                            <option value="Tabel Bank Soal" selected>Tabel Bank Soal</option>
-                            <option value="Daftar Soal Berurutan">Daftar Soal Berurutan</option>
-                            <option value="Kartu Soal">Kartu Soal</option>
-                            <option value="Paket Soal Lengkap">Paket Soal Lengkap</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Komponen yang Dicantumkan</label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-slate-700">
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Nomor Soal"> <span>Nomor Soal</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Materi Pokok"> <span>Materi Pokok</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Tujuan Pembelajaran"> <span>Tujuan Pembelajaran</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Level Kognitif"> <span>Level Kognitif</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Indikator Soal"> <span>Indikator Soal</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Bentuk Soal"> <span>Bentuk Soal</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Butir Soal"> <span>Butir Soal</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Pilihan Jawaban"> <span>Pilihan Jawaban</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Kunci Jawaban"> <span>Kunci Jawaban</span></label>
-                            <label class="flex items-center space-x-1"><input name="komponen_bank_soal" type="checkbox" value="Pembahasan"> <span>Pembahasan</span></label>
-                            <label class="flex items-center space-x-1"><input name="komponen_bank_soal" type="checkbox" value="Skor"> <span>Skor</span></label>
-                            <label class="flex items-center space-x-1"><input checked name="komponen_bank_soal" type="checkbox" value="Tingkat Kesulitan"> <span>Tingkat Kesulitan</span></label>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Sertakan Kunci Jawaban</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="sertakan_kunci_jawaban">
-                                <option value="Ya" selected>Ya</option>
-                                <option value="Tidak">Tidak</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Sertakan Pembahasan</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="sertakan_pembahasan">
-                                <option value="Ya" selected>Ya</option>
-                                <option value="Tidak">Tidak</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Sertakan Pedoman Penskoran</label>
-                            <select class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600" id="sertakan_pedoman_penskoran">
-                                <option value="Ya" selected>Ya</option>
-                                <option value="Tidak">Tidak</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            selectMapel.innerHTML = pilihan.mapel.map(mapel => `<option value="${mapel}">${mapel}</option>`).join('');
+            selectMapel.disabled = pilihan.mapel.length === 1;
+            selectMapel.classList.toggle('bg-slate-100', pilihan.mapel.length === 1);
+            selectMapel.title = pilihan.mapel.length === 1
+                ? 'Mata pelajaran ditetapkan otomatis sesuai jenjang pendidikan.'
+                : 'Pilih mata pelajaran yang tersedia untuk jenjang ini.';
 
-                <div class="card p-6 space-y-4">
-                    <h3 class="text-md font-bold text-blue-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-pen mr-2"></i>10. CATATAN KHUSUS</h3>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Khusus Penyusunan Soal</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="catatan_khusus_penyusunan_soal" rows="2" placeholder="Contoh: hindari soal jebakan, gunakan bahasa sederhana, integrasikan nilai Islam, sesuaikan dengan konteks sekolah."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Instruksi Tambahan (Opsional)</label>
-                        <textarea class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 allow-select" id="instruksiTambahan" rows="2" placeholder="Ada catatan atau kebutuhan khusus lain yang belum tercakup di atas? Tuliskan di sini..."></textarea>
-                    </div>
-                </div>
+            if (pilihan.mapel.includes(mapelSebelumnya)) selectMapel.value = mapelSebelumnya;
+            updateMapelDanKelas();
+        }
 
-                <div class="flex flex-wrap gap-3">
-                    <button class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition duration-150" onclick="clearForm()">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Kosongkan
-                    </button>
-                    <button class="flex-1 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded-xl transition duration-150" onclick="muatContohIPAS()">
-                        <i class="fa-solid fa-flask mr-1"></i> Muat Contoh IPAS Kelas 4
-                    </button>
-                    <button class="flex-1 py-3 bg-violet-100 hover:bg-violet-200 text-violet-800 font-semibold rounded-xl transition duration-150" onclick="simpanKonfigurasi()">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan di Perangkat
-                    </button>
-                    <button class="flex-1 py-3 bg-violet-100 hover:bg-violet-200 text-violet-800 font-semibold rounded-xl transition duration-150" onclick="muatKonfigurasi()">
-                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Muat Konfigurasi
-                    </button>
-                    <button class="flex-[2] py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition duration-150" onclick="generatePromptBankSoal()">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Hasilkan Prompt Bank Soal
-                    </button>
-                </div>
-            </div>
+        function toggleJenisStimulus() {
+            const stimulus = document.getElementById('stimulus_soal').value;
+            const wrapper = document.getElementById('wrapper_jenis_stimulus');
+            wrapper.style.display = (stimulus === 'Ya') ? '' : 'none';
+        }
+        toggleJenisStimulus();
 
-            <div class="lg:col-span-5 flex flex-col">
-                <div class="card p-6 flex-1 flex flex-col sticky top-24">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-                        <h3 class="text-md font-bold text-slate-800"><i class="fa-solid fa-terminal mr-2 text-emerald-600"></i>AI PROMPT READY</h3>
-                        <div class="flex items-center gap-2">
-                            <button class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1 allow-select" onclick="copyToClipboard()">
-                                <i class="fa-regular fa-copy"></i> <span id="copyText">Salin Prompt</span>
-                            </button>
-                            <button class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1 allow-select" onclick="downloadPromptTxt()">
-                                <i class="fa-solid fa-download"></i> <span>Unduh .txt</span>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-500 mb-3">
-                        Salin petunjuk di bawah ini dan tempelkan ke AI (seperti ChatGPT/Gemini). Jika Anda melampirkan file materi di chat AI tersebut, prompt ini otomatis akan menginstruksikan AI menjadikannya acuan utama.
-                    </p>
-                    <div class="flex-1 min-h-[400px] lg:min-h-[0px] bg-slate-950 rounded-xl p-4 text-slate-200 font-mono text-xs overflow-y-auto border border-slate-800 allow-select">
-                        <div class="output-box" id="outputPrompt">Isi data di formulir kiri lalu klik tombol "Hasilkan Prompt Bank Soal" untuk melihat instruksi AI siap pakai...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        function getSelectedCheckboxes(name, fallback) {
+            const boxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+            let values = [];
+            boxes.forEach(cb => values.push(cb.value));
+            return values.length > 0 ? values.join(', ') : fallback;
+        }
 
-        <script src="https://raw.githubusercontent.com/MuhammadFuad81/edumind-pg/main/bank-soal-ipa-ips-ipas-lengkap-080826.js?v=20260809-2"></script>
+        function updateIndikatorSoal() {
+            const tp = document.getElementById('tujuan_pembelajaran').value.trim();
+            const cp = document.getElementById('capaian_pembelajaran').value.trim();
+            const indikator = tp
+                ? `Peserta didik mampu ${tp.charAt(0).toLowerCase() + tp.slice(1)} sesuai CP yang berlaku.`
+                : (cp ? 'Isi Tujuan Pembelajaran (TP) untuk menghasilkan indikator soal otomatis.' : 'CP dan TP diperlukan untuk menghasilkan indikator soal.');
+            document.getElementById('indikator_soal').value = indikator;
+        }
 
-</body>
-</html>
+        function getJumlahPerBentuk() {
+            const rincian = [];
+            document.querySelectorAll('[data-jumlah-bentuk]').forEach(input => {
+                const jumlah = Number(input.value) || 0;
+                if (jumlah > 0) rincian.push(`${input.dataset.jumlahBentuk}: ${jumlah} butir`);
+            });
+            return rincian;
+        }
+
+        function validateForm() {
+            const tp = document.getElementById('tujuan_pembelajaran').value.trim();
+            if (!tp) {
+                alert('Tujuan Pembelajaran (TP) wajib diisi sebelum menghasilkan prompt.');
+                document.getElementById('tujuan_pembelajaran').focus();
+                return false;
+            }
+            const total = Number(document.getElementById('jumlah_soal').value) || 0;
+            const distribusi = getJumlahPerBentuk().reduce((sum, item) => sum + Number(item.match(/(\d+) butir$/)[1]), 0);
+            if (total < 1 || distribusi !== total) {
+                alert(`Jumlah soal total (${total}) harus sama dengan jumlah per bentuk (${distribusi}).`);
+                return false;
+            }
+            const kesulitan = ['kesulitan_mudah', 'kesulitan_sedang', 'kesulitan_sulit']
+                .reduce((sum, id) => sum + (Number(document.getElementById(id).value) || 0), 0);
+            if (kesulitan !== 100) {
+                alert(`Proporsi tingkat kesulitan harus tepat 100%. Saat ini: ${kesulitan}%.`);
+                return false;
+            }
+            document.querySelectorAll('[data-jumlah-bentuk]').forEach(input => {
+                const checkbox = document.querySelector(`input[name="bentuk_soal"][value="${input.dataset.jumlahBentuk}"]`);
+                if (checkbox) checkbox.checked = (Number(input.value) || 0) > 0;
+            });
+            return true;
+        }
+
+        function muatContohIPAS() {
+            document.getElementById('jenjang_pendidikan').value = 'SD/MI';
+            updateJenjangDanPilihan();
+            document.getElementById('fase_kelas').value = 'Fase B Kelas 4';
+            document.getElementById('bab_ke').value = 'BAB 1';
+            document.getElementById('judul_bab').value = 'Mengubah Bentuk Energi';
+            document.getElementById('topik_unit').value = 'Perubahan energi di sekitar kita dan fotosintesis sebagai proses penting di Bumi';
+            document.getElementById('tujuan_pembelajaran').value = 'Mengidentifikasi perubahan bentuk energi pada benda di sekitar serta menjelaskan peran fotosintesis dalam kehidupan.';
+            document.getElementById('nama_file_referensi').value = 'IPAS_Kelas4_Bab1.pdf';
+            document.getElementById('fokus_file_referensi').value = 'Bab 1, halaman 3-23';
+            document.getElementById('jumlah_soal').value = '25';
+            [['Pilihan Ganda', 15], ['Pilihan Ganda Kompleks', 0], ['Benar-Salah', 0], ['Menjodohkan', 0], ['Isian Singkat', 5], ['Uraian', 5], ['Studi Kasus', 0]].forEach(([nama, jumlah]) => {
+                document.querySelector(`[data-jumlah-bentuk="${nama}"]`).value = jumlah;
+                document.querySelector(`input[name="bentuk_soal"][value="${nama}"]`).checked = jumlah > 0;
+            });
+            document.getElementById('kesulitan_mudah').value = '40';
+            document.getElementById('kesulitan_sedang').value = '40';
+            document.getElementById('kesulitan_sulit').value = '20';
+            updateCapaianPembelajaran();
+            document.getElementById('outputPrompt').innerText = 'Contoh IPAS Kelas 4 telah dimuat.';
+        }
+
+        const KONFIGURASI_KEY = 'akds_bank_soal_lengkap_080826';
+        function simpanKonfigurasi() {
+            const data = {};
+            document.querySelectorAll('#app-content input[id], #app-content textarea[id], #app-content select[id]').forEach(el => {
+                data[el.id] = el.value;
+            });
+            document.querySelectorAll('#app-content input[type="checkbox"]').forEach((el, index) => { data[`checkbox_${index}`] = el.checked; });
+            document.querySelectorAll('#app-content [data-jumlah-bentuk]').forEach(el => { data[`jumlah_${el.dataset.jumlahBentuk}`] = el.value; });
+            localStorage.setItem(KONFIGURASI_KEY, JSON.stringify(data));
+            alert('Konfigurasi terakhir tersimpan di perangkat ini.');
+        }
+
+        function muatKonfigurasi() {
+            const data = JSON.parse(localStorage.getItem(KONFIGURASI_KEY) || 'null');
+            if (!data) { alert('Belum ada konfigurasi tersimpan di perangkat ini.'); return; }
+            document.getElementById('jenjang_pendidikan').value = data.jenjang_pendidikan || 'SD/MI';
+            updateJenjangDanPilihan();
+            Object.entries(data).forEach(([id, value]) => {
+                const el = document.getElementById(id);
+                if (el && id !== 'jenjang_pendidikan') el.value = value;
+            });
+            document.querySelectorAll('#app-content input[type="checkbox"]').forEach((el, index) => { el.checked = Boolean(data[`checkbox_${index}`]); });
+            document.querySelectorAll('#app-content [data-jumlah-bentuk]').forEach(el => { el.value = data[`jumlah_${el.dataset.jumlahBentuk}`] || '0'; });
+            updateCapaianPembelajaran();
+            alert('Konfigurasi berhasil dimuat.');
+        }
+
+        function clearForm() {
+            const textFields = ['nama_sekolah', 'bab_ke', 'judul_bab', 'topik_unit', 'capaian_pembelajaran',
+                'tujuan_pembelajaran', 'fokus_file_referensi', 'jumlah_soal', 'proporsi_level',
+                'catatan_peruntukan', 'catatan_khusus_penyusunan_soal', 'instruksiTambahan'];
+            textFields.forEach(id => { document.getElementById(id).value = ''; });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+
+            ['stimulus_soal', 'format_bank_soal',
+             'sertakan_kunci_jawaban', 'sertakan_pembahasan', 'sertakan_pedoman_penskoran'].forEach(id => {
+                document.getElementById(id).selectedIndex = 0;
+            });
+
+            document.getElementById('jenjang_pendidikan').value = 'SD/MI';
+            document.getElementById('mata_pelajaran').value = 'IPAS';
+            updateJenjangDanPilihan();
+            document.getElementById('fase_kelas').value = 'Fase B Kelas 4';
+            updateCapaianPembelajaran();
+
+            toggleJenisStimulus();
+            document.getElementById('outputPrompt').innerText = 'Formulir telah dibersihkan.';
+        }
+
+        function ubahBab(delta) {
+            const input = document.getElementById('bab_ke');
+            const match = (input.value || '').match(/\d+/);
+            let n = match ? parseInt(match[0], 10) : 0;
+            n = Math.max(1, n + delta);
+            input.value = 'BAB ' + n;
+        }
+
+        function generatePromptBankSoal() {
+            if (!validateForm()) return;
+            const namaSekolah = document.getElementById('nama_sekolah').value || '[Nama Sekolah Belum Diisi]';
+            const jenjang = document.getElementById('jenjang_pendidikan').value;
+            const faseKelas = document.getElementById('fase_kelas').value;
+            const mapel = document.getElementById('mata_pelajaran').value || '[Mata Pelajaran Belum Diisi]';
+            const babKe = document.getElementById('bab_ke').value.trim() || '[BAB Ke- Belum Diisi]';
+            const judulBab = document.getElementById('judul_bab').value || '[Judul Bab Belum Diisi]';
+            const topikUnit = document.getElementById('topik_unit').value || '[Topik/Unit Pembelajaran Belum Diisi]';
+            const cp = document.getElementById('capaian_pembelajaran').value || '[CP Belum Diisi]';
+            const tp = document.getElementById('tujuan_pembelajaran').value || '[TP Belum Diisi]';
+            const indikator = document.getElementById('indikator_soal').value || '[Indikator Soal Belum Tersedia]';
+            const namaFile = document.getElementById('nama_file_referensi').value.trim() || 'Nama file tidak dicantumkan';
+            const fokusFile = document.getElementById('fokus_file_referensi').value.trim();
+
+            const dimensiProfilLulusan = getSelectedCheckboxes('dimensi_profil_lulusan', 'Keimanan, Kewargaan, Nalar Kritis');
+            const bentukSoal = getSelectedCheckboxes('bentuk_soal', 'Pilihan Ganda, Uraian');
+            const jumlahSoal = document.getElementById('jumlah_soal').value || '20';
+            const jumlahPerBentuk = getJumlahPerBentuk().join('; ');
+
+            const levelKognitif = getSelectedCheckboxes('level_kognitif', 'L1 (Knowing), L2 (Applying), L3 (Reasoning)');
+            const proporsiLevel = document.getElementById('proporsi_level').value.trim() || 'Proporsi seimbang otomatis antar level yang dipilih';
+            const proporsiKesulitan = `Mudah ${document.getElementById('kesulitan_mudah').value}%, Sedang ${document.getElementById('kesulitan_sedang').value}%, Sulit ${document.getElementById('kesulitan_sulit').value}%`;
+
+            const konteksSoal = getSelectedCheckboxes('konteks_soal', 'Kehidupan Sehari-hari');
+            const stimulusSoal = document.getElementById('stimulus_soal').value;
+            const jenisStimulus = stimulusSoal === 'Ya' ? getSelectedCheckboxes('jenis_stimulus', 'Teks Bacaan') : 'Tidak menggunakan stimulus';
+            const gayaBahasa = document.getElementById('gaya_bahasa_soal').value;
+
+            const catatanPeruntukan = document.getElementById('catatan_peruntukan').value.trim();
+
+            const formatBankSoal = document.getElementById('format_bank_soal').value;
+            const komponenBankSoal = getSelectedCheckboxes('komponen_bank_soal', 'Nomor Soal, Butir Soal, Kunci Jawaban');
+            const sertakanKunci = document.getElementById('sertakan_kunci_jawaban').value;
+            const sertakanPembahasan = document.getElementById('sertakan_pembahasan').value;
+            const sertakanPedoman = document.getElementById('sertakan_pedoman_penskoran').value;
+
+            const catatanKhusus = document.getElementById('catatan_khusus_penyusunan_soal').value || 'Tidak ada catatan khusus.';
+            const instruksiTambahan = document.getElementById('instruksiTambahan').value.trim();
+
+            const instruksiFile = `### 0. PARAMETER KETAT (WAJIB DIPATUHI MUTLAK — BACA DAN EVALUASI TERLEBIH DAHULU SEBELUM MENYUSUN SOAL)
+
+**A. Referensial (Validitas Mutlak):**
+- **JIKA** pada percakapan ini pengguna turut melampirkan (upload) file PDF materi ajar bernama "${namaFile}" untuk ${babKe} — "${judulBab}" (Topik/Unit: ${topikUnit}): WAJIB jadikan ISI FILE TERSEBUT sebagai SATU-SATUNYA ACUAN UTAMA dan sumber kebenaran materi soal. DILARANG KERAS menyusun soal yang menyimpang, menambah topik di luar cakupan file, atau bertentangan dengan isi file tersebut — ini untuk menjamin seluruh butir soal tetap berada dalam lingkup CP resmi dan menghindari halusinasi informasi di luar buku teks rujukan. Field CP dan TP pada parameter di bawah HANYA berfungsi sebagai konteks pelengkap, BUKAN pengganti isi file.${fokusFile ? `\n  Fokuskan pembacaan file pada bagian: "${fokusFile}".` : ''}
+- **JIKA TIDAK ADA** file yang dilampirkan pada percakapan ini: ABAIKAN poin di atas sepenuhnya, dan susun soal secara MANDIRI berdasarkan seluruh parameter form di bawah ini tanpa memerlukan file tambahan apa pun.
+
+**B. Variasi Stimulus Edukatif:**
+- Untuk setiap batch pengerjaan, WAJIB gunakan jenis stimulus yang berbeda-beda dan beragam dari pilihan (${jenisStimulus}). Stimulus harus bersifat kontekstual, menarik, memiliki unsur keterbaruan, dan menginspirasi siswa berpikir kritis. DILARANG mengulang jenis stimulus yang sama secara berturut-turut jika lebih dari satu jenis dipilih.
+
+**C. Presisi Level Kognitif:**
+- WAJIB patuhi perbedaan mendalam pada level kognitif yang dipilih (${levelKognitif}): L1 (Knowing) menguji kemampuan standar minimum mengingat dan memahami materi; L2 (Applying) menguji kemampuan aplikasi konsep dalam situasi berbeda/konteks nyata; L3 (Reasoning) menguji kemampuan penalaran kritis melalui analisis, evaluasi, dan kreasi. DILARANG mencampuradukkan karakteristik antar level.
+
+**D. Aturan Non-Repetisi & Independensi Butir Soal:**
+- Jika satu stimulus digunakan untuk lebih dari satu soal, DILARANG KERAS membuat butir soal yang jawabannya sudah tertera pada soal sebelumnya dalam stimulus yang sama. Setiap soal harus berdiri sendiri secara logika.
+
+--- KONTEKS STRUKTUR SISTEM AKDS ---
+- Pilar Utama: Pilar 1 — KURIKULUM & PEMBELAJARAN
+- Sub-Pilar Kerja: Sub-Pilar 2 — Asesmen dan Evaluasi Pembelajaran
+- Nama Produk: Bank Soal (Generator Bank Soal Dinamis Berbasis BAB sesuai Permendikdasmen No. 13 Tahun 2025)`;
+
+            const promptText = `Bertindaklah sebagai Pakar Evaluasi Pendidikan Senior, Ahli Kurikulum Merdeka, dan Spesialis Penyusun Bank Soal Sekolah berbasis Deep Learning (berkesadaran, bermakna, dan menggembirakan). Tugas Anda adalah menyusun Master Database Bank Soal yang lengkap, valid, kontekstual, dan siap pakai berdasarkan parameter berikut.
+
+${instruksiFile}
+
+1. IDENTITAS SATUAN PENDIDIKAN
+- Nama Sekolah: ${namaSekolah}
+- Jenjang Pendidikan: ${jenjang}
+- Fase/Kelas: ${faseKelas}
+- Mata Pelajaran: ${mapel}
+
+2. BAB & KOMPETENSI
+- BAB Ke-: ${babKe}
+- Judul Bab: ${judulBab}
+- Topik/Unit Pembelajaran: ${topikUnit}
+- Capaian Pembelajaran (CP): ${cp}
+- Tujuan Pembelajaran (TP) yang Diukur: ${tp}
+- Indikator Soal Otomatis: ${indikator}
+- Sumber Materi: ${namaFile}${fokusFile ? ` (${fokusFile})` : ''}
+
+3. DIMENSI PROFIL LULUSAN
+- Dimensi yang Diintegrasikan: ${dimensiProfilLulusan}
+
+4. BENTUK SOAL & KUANTITAS
+- Bentuk Soal: ${bentukSoal}
+- Kuantitas (n) Total: ${jumlahSoal} butir
+- Distribusi Wajib per Bentuk: ${jumlahPerBentuk}
+- Proporsi Tingkat Kesulitan: ${proporsiKesulitan}
+
+5. PRESISI LEVEL KOGNITIF
+- Level Kognitif: ${levelKognitif}
+- Proporsi Level: ${proporsiLevel}
+
+6. KONTEKS & STIMULUS
+- Konteks Soal: ${konteksSoal}
+- Gunakan Stimulus: ${stimulusSoal}
+- Jenis Stimulus: ${jenisStimulus}
+- Bahasa dan Gaya Soal: ${gayaBahasa}
+
+7. CATATAN PERUNTUKAN (INFORMATIF, BUKAN FILTER)
+${catatanPeruntukan ? `- ${catatanPeruntukan}` : '- Tidak dicantumkan. Guru memiliki otonomi penuh menggunakan output soal ini untuk kebutuhan asesmen apa pun (diagnostik, formatif, sumatif, ujian sekolah, latihan, dll) sesuai kebutuhan di lapangan.'}
+
+8. FORMAT & KOMPONEN BANK SOAL
+- Format Bank Soal: ${formatBankSoal}
+- Komponen yang Dicantumkan: ${komponenBankSoal}
+- Sertakan Kunci Jawaban: ${sertakanKunci}
+- Sertakan Pembahasan: ${sertakanPembahasan}
+- Sertakan Pedoman Penskoran: ${sertakanPedoman}
+
+9. CATATAN KHUSUS
+- Catatan Khusus Penyusunan Soal: ${catatanKhusus}
+${instruksiTambahan ? `\n10. INSTRUKSI TAMBAHAN DARI PENGGUNA:\n${instruksiTambahan}\n` : ''}
+--------------------------------------------------
+TUGAS ANDA (AI):
+Susun Master Database Bank Soal ini ke dalam format "${formatBankSoal}" yang rapi, mencantumkan seluruh komponen yang diminta (${komponenBankSoal}), dengan Kuantitas (n) ${jumlahSoal} butir soal sesuai distribusi wajib per bentuk (${jumlahPerBentuk}), Dimensi Profil Lulusan (${dimensiProfilLulusan}), Level Kognitif (${levelKognitif}) sesuai Proporsi Level (${proporsiLevel}), dan tingkat kesulitan (${proporsiKesulitan}). Setiap butir soal harus jelas kaitannya dengan TP dan indikator soal. Gunakan ${gayaBahasa}. WAJIB patuhi seluruh Parameter Ketat pada bagian 0 secara mutlak. Jangan ada bagian yang terpotong atau menggunakan placeholder.${instruksiTambahan ? ' Perhatikan dan ikuti juga instruksi tambahan dari pengguna di atas.' : ''}`;
+
+            document.getElementById('outputPrompt').innerText = promptText;
+        }
+
+        function copyToClipboard() {
+            const promptBox = document.getElementById('outputPrompt');
+            const currentText = promptBox.innerText;
+
+            if (currentText.includes('Isi data di formulir') || currentText.trim() === '') {
+                alert('Silakan klik "Hasilkan Prompt Bank Soal" terlebih dahulu!');
+                return;
+            }
+
+            navigator.clipboard.writeText(currentText).then(() => {
+                const btnText = document.getElementById('copyText');
+                btnText.innerText = 'Tersalin!';
+                setTimeout(() => {
+                    btnText.innerText = 'Salin Prompt';
+                }, 2000);
+            }).catch(err => {
+                alert('Gagal menyalin teks secara otomatis: ' + err);
+            });
+        }
+
+        function downloadPromptTxt() {
+            const currentText = document.getElementById('outputPrompt').innerText;
+            if (currentText.includes('Isi data di formulir') || currentText.includes('telah dimuat') || currentText.trim() === '') {
+                alert('Silakan hasilkan prompt terlebih dahulu sebelum mengunduhnya.');
+                return;
+            }
+            const blob = new Blob([currentText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'prompt-bank-soal.txt';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
